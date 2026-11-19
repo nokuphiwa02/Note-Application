@@ -1,4 +1,3 @@
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export type User = {
@@ -49,4 +48,24 @@ export const registerUser = async (
     USERS_KEY,
     JSON.stringify(users)
   );
+};
+
+// Login user
+export const loginUser = async (
+  email: string,
+  password: string
+): Promise<User> => {
+  const users = await getUsers();
+
+  const existingUser = users.find(
+    (user) =>
+      user.email.toLowerCase() === email.trim().toLowerCase() &&
+      user.password === password
+  );
+
+  if (!existingUser) {
+    throw new Error("Incorrect email or password.");
+  }
+
+  return existingUser;
 };
