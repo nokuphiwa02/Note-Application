@@ -1,19 +1,37 @@
 
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  ScrollView,
-} from "react-native";
-
+import {View, Text, Pressable, StyleSheet, TextInput, ScrollView,}
+ from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
+import { loginUser } from "@/storage/userStorage";
+import { useState } from "react";
 
 export default function Login() {
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+
   const router = useRouter();
+
+  const handleLogin = async () => {
+  if (!email.trim() || !password.trim()) {
+    window.alert("Please enter your email and password.");
+    return;
+  }
+
+  try {
+    const user = await loginUser(email, password);
+
+    window.alert(`Welcome back, ${user.fullName}!`);
+
+    router.replace("/home");
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Something went wrong.";
+
+    window.alert(message);
+  }
+};
 
   return (
     <SafeAreaView style={styles.container}>
@@ -44,6 +62,8 @@ export default function Login() {
               placeholderTextColor="#9D174D"
               keyboardType="email-address"
               autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
             />
           </View>
 
@@ -55,13 +75,15 @@ export default function Login() {
               style={styles.input}
               placeholderTextColor="#9D174D"
               secureTextEntry
+              value={password}
+              onChangeText={setPassword}
             />
           </View>
 
     
           <Pressable
             style={styles.button}
-            onPress={() => console.log("Login button pressed!")}
+            onPress={handleLogin}
           >
             <Text style={styles.buttonText}>
               Login
