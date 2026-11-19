@@ -11,9 +11,85 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
+import { useState } from "react";
+
+import { registerUser } from "../storage/userStorage";
 
 export default function Register() {
+  // Store user's information
+  const [fullName, setFullName] = useState("");
+  const [surname, setSurname] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // Track registration loading
+  const [loading, setLoading] = useState(false);
+
+  // Navigation
   const router = useRouter();
+
+  // Handle registration
+  const handleRegister = async () => {
+    // Remove unnecessary spaces
+    const trimmedName = fullName.trim();
+    const trimmedSurname = surname.trim();
+    const trimmedEmail = email.trim();
+
+    // Validate empty fields
+    if (
+      !trimmedName ||
+      !trimmedSurname ||
+      !trimmedEmail ||
+      !password.trim()
+    ) {
+      window.alert(
+        "Incomplete Information!\nPlease complete all fields."
+      );
+      return;
+    }
+
+    // Validate email format
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailPattern.test(trimmedEmail)) {
+      window.alert("Invalid Email!\nPlease enter a valid email address.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Save user
+      await registerUser({
+        fullName: trimmedName,
+        surname: trimmedSurname,
+        email: trimmedEmail,
+        password: password,
+      });
+
+      // Success message and navigation
+      window.alert(
+        "Registration Successful!\nYour account has been created successfully."
+      );
+
+      // Navigate to Home after user clicks OK
+      router.replace("/home");
+
+    } catch (error) {
+      console.log("Registration error:", error);
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again.";
+
+      // Display error message
+      window.alert("Registration Failed!\n" + message);
+
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -38,57 +114,73 @@ export default function Register() {
           {/* Full Name */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Full Name</Text>
+
             <TextInput
               placeholder="Enter your full name"
               style={styles.input}
               placeholderTextColor="#9D174D"
+              value={fullName}
+              onChangeText={setFullName}
             />
           </View>
 
           {/* Surname */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Surname</Text>
+
             <TextInput
               placeholder="Enter your surname"
               style={styles.input}
               placeholderTextColor="#9D174D"
+              value={surname}
+              onChangeText={setSurname}
             />
           </View>
 
           {/* Email */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email Address</Text>
+
             <TextInput
               placeholder="Enter your email"
               style={styles.input}
               placeholderTextColor="#9D174D"
               keyboardType="email-address"
               autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
             />
           </View>
 
           {/* Password */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
+
             <TextInput
               placeholder="Create a password"
               style={styles.input}
               placeholderTextColor="#9D174D"
               secureTextEntry
+              value={password}
+              onChangeText={setPassword}
             />
           </View>
 
           {/* Register Button */}
           <Pressable
-            style={styles.button}
-            onPress={() => console.log("Registration button pressed!")}
+            style={[
+              styles.button,
+              loading && styles.disabledButton,
+            ]}
+            onPress={handleRegister}
+            disabled={loading}
           >
             <Text style={styles.buttonText}>
-              Create Account
+              {loading ? "Creating Account..." : "Create Account"}
             </Text>
           </Pressable>
 
-          {/* Back to Landing Page */}
+          {/* Back to Home */}
           <Pressable
             style={styles.backButton}
             onPress={() => router.replace("/")}
@@ -175,6 +267,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     elevation: 3,
+  },
+
+  disabledButton: {
+    opacity: 0.6,
   },
 
   buttonText: {
