@@ -1,11 +1,13 @@
 import { Text, View, StyleSheet, ScrollView } from "react-native";
-import Home from "./home"
+// import Home from "./home"
+import Landing from "./landing";
 
 export default function Index() {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView}>
-       <Home/>
+        <Landing/>
+       {/* <Home/> */}
       </ScrollView>
       
     </View>
